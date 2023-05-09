@@ -1,4 +1,4 @@
-# POC PCRS
+# POC lidar classe
 
 Ce dépôt a pour but de faire un poc sur l'extraction d'une/des dalles(s) pcrs à l'aide d'une carte.
 
