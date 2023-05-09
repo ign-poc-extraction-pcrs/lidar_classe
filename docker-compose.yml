@@ -1,0 +1,23 @@
+version: '3'
+
+services:
+  demo-lidarhd-classe:
+    container_name: demo-lidarhd-classe
+    build:
+      context: "."  
+      dockerfile: Dockerfile
+      args:    
+        - http_proxy
+        - https_proxy
+    environment:
+      - HTTP_PROXY=${HTTP_PROXY}
+      - HTTPS_PROXY=${HTTPS_PROXY}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - BUCKET_NAME=${BUCKET_NAME}
+      - ENDPOINT_URL=${ENDPOINT_URL}
+      - REGION_NAME=${REGION_NAME}
+      - HOST_SERVEUR=${HOST_SERVEUR}
+    ports:
+      - '5000:5000'
+    restart: on-failure
