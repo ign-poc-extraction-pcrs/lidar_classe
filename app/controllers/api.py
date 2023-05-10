@@ -3,6 +3,9 @@ import json
 import os
 import shapely.geometry
 from app.utils.dalle_lidar_classe import BLOCS, get_blocs_classe, get_dalle_classe
+import psycopg2
+import psycopg2.extras
+from dotenv import load_dotenv
 
 
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -19,11 +22,21 @@ def get_config_serveur():
 
 
 @api.route('/version5/get/dalle/<float(signed=True):x_min>/<float(signed=True):y_min>/<float(signed=True):x_max>/<float(signed=True):y_max>', methods=['GET', 'POST'])
-def get_dalle_lidar_classe(x_min=None, y_min=None, x_max=None, y_max=None):
-    bbox_windows = (x_min, y_min, x_max, y_max)
-    paquets = get_dalle_in_bloc(bbox_windows)
-
-    return jsonify({"result": paquets["paquet_within_bloc"], "count_dalle": paquets["count_dalle"] })
+def get_dalle_lidar_classe_2(x_min=None, y_min=None, x_max=None, y_max=None): 
+    load_dotenv()
+    bdd = get_connexion_bdd()
+    # si il n'y a aucun probleme avec la connexion à la base
+    if bdd :
+        #  on recupere les dalles qui sont dans la bbox envoyer
+        bdd.execute(f"SELECT name, ST_AsGeoJson(st_transform(st_setsrid(geom, 2154),4326)) as polygon FROM dalle WHERE geom && ST_MakeEnvelope({x_min}, {y_min}, {x_max}, {y_max})")
+        dalles = bdd.fetchall()
+        bdd.execute(f"SELECT count(id) FROM dalle")
+        count_dalle = bdd.fetchone()
+        statut = "success"
+        bdd.close()
+    else :
+        statut = "erreur"
+    return jsonify({"statut": statut, "result": dalles, "count_dalle": count_dalle["count"]})
 
 
 @api.route('/version5/get/blocs', methods=['GET', 'POST'])
@@ -82,3 +95,19 @@ def get_bboxes_within_bboxes(bbox, bbox_windows):
     if bbox_windows.contains(bbox_polygon):
         return True
     return False
+
+
+def get_connexion_bdd():
+    """ Connexion à la base de données pour accéder aux dalles pcrs
+
+    Returns:
+        cursor: curseur pour executer des requetes à la base
+    """
+    try :
+        load_dotenv()
+
+        conn = psycopg2.connect(database=os.environ.get('POSTGRES_DB'), user=os.environ.get('POSTGRES_USER'), host=os.environ.get('HOST'), password=os.environ.get('POSTGRES_PASSWORD'), port=5432)
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    except psycopg2.OperationalError as e:
+        return False
+    return cur

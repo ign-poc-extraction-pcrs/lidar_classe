@@ -160,16 +160,6 @@ def create_geojson_lidar():
 
 
 def create_shp_lidar_classe(path_shp, file_shp):
-    # bloc disponible sur https://lidar-publications.cegedim.cloud/, à modifier pour le rendre dynamique
-    # {'nom_pkk': 'LR/Semis_2021_0704_6232_LA93_IGN69.laz', 
-    # 'url_telechargement': 'https://lidar-publications.cegedim.cloud/s3/LR/Semis_2021_0704_6232_LA93_IGN69.laz', 
-    # 'Geometry': {'type': 'Polygon', 'coordinates': [[(704000, 6231000), (705000, 6231000), (705000, 6232000), (704000, 6232000), (704000, 6231000)]]}}
-#     [
-#     (bbox[0], bbox[1]),
-#     (bbox[2], bbox[1]),
-#     (bbox[2], bbox[3]),
-#     (bbox[0], bbox[3])
-# ]
     
     paquets = []
     
