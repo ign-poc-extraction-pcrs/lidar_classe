@@ -8,11 +8,13 @@ from pathlib import Path
 import urllib.request
 
 from app.utils.create_shp import create_shp_file
+from app.utils.dalle_lidar_classe import BLOCS
 
 download_lidar = Blueprint('download_lidar', __name__, url_prefix='/download/lidar')
 
 KEY_JSON_LIDAR = "key_lidar"
 PATH_KEY = Path(__file__).parent / "../../config.json"
+BLOCS = BLOCS
 
 @download_lidar.route('/shp', methods=['GET', 'POST'])
 def download_shp():
@@ -159,39 +161,36 @@ def create_geojson_lidar():
 
 def create_shp_lidar_classe(path_shp, file_shp):
     # bloc disponible sur https://lidar-publications.cegedim.cloud/, à modifier pour le rendre dynamique
-    BLOCS = ["GP", "HP", "IO", "IP", "LN", "KN", "KP", "LR"]
-    paquets = []
-    for nom_bloc in BLOCS:
-        # on recupere les paquets par code
-        data = urllib.request.urlopen(f"https://lidar-publications.cegedim.cloud/{nom_bloc}.txt")
-        # on parcours chaque ligne pour inserer chaque paquets dans le code concerné
-        for line in data:
-            # on decode les lignne : bytes -> string
-            paquets.append(line.decode("utf-8").split("\n")[0])
+    # {'nom_pkk': 'LR/Semis_2021_0704_6232_LA93_IGN69.laz', 
+    # 'url_telechargement': 'https://lidar-publications.cegedim.cloud/s3/LR/Semis_2021_0704_6232_LA93_IGN69.laz', 
+    # 'Geometry': {'type': 'Polygon', 'coordinates': [[(704000, 6231000), (705000, 6231000), (705000, 6232000), (704000, 6232000), (704000, 6231000)]]}}
+#     [
+#     (bbox[0], bbox[1]),
+#     (bbox[2], bbox[1]),
+#     (bbox[2], bbox[3]),
+#     (bbox[0], bbox[3])
+# ]
     
-    SIZE = 1000  
-    data = []
-    for paquet_lidar in paquets:
-        # on recupere le x et y du nom du paquet
-        name_paquet = f"{paquet_lidar.split('/')[-2]}/{paquet_lidar.split('/')[-1]}"
-        x = name_paquet.split("_")[2]
-        y = name_paquet.split("_")[3]
-        
+    paquets = []
+    
+    script_dir = os.path.dirname(__file__)
+    file_path_json_s3 = os.path.join(script_dir, "../static/json/dalle_lidar_classe_s3_2.geojson")
+    
+    with open(file_path_json_s3) as file:
+        dalles_s3 = json.load(file)
 
-        # on convertit les bonnes coordonnées
-        if isint(x) and isint(y):
-            x_min = int(x) * 1000
-            y_min = int(y) * 1000
-            x_max = x_min + SIZE
-            y_max = y_min - SIZE
+    data = []
+    # on parcours chaque ligne pour inserer chaque paquets dans le code concerné
+    for bl in BLOCS:
+        for dalle in dalles_s3["paquet_within_bloc"][bl]:
 
             # ce qui va etre envoyer dans ls shp
             name_colonne = "nom_pkk"
             colonne = [{"nom_colonne": name_colonne, "type": "C"}, {"nom_colonne": "url_telechargement", "type": "C"}]
-            data.append({name_colonne: name_paquet, 
-                        "url_telechargement": f"https://lidar-publications.cegedim.cloud/s3/{name_paquet}" , 
-                        "Geometry": {'type': 'Polygon', 'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]}})
-
+            data.append({name_colonne: dalle["name"], 
+                        "url_telechargement": dalle["name"] , 
+                        "Geometry": {'type': 'Polygon', 'coordinates': [[(dalle["bbox"][0], dalle["bbox"][1]), (dalle["bbox"][2], dalle["bbox"][1]), (dalle["bbox"][2], dalle["bbox"][3]), (dalle["bbox"][0], dalle["bbox"][3]), (dalle["bbox"][0], dalle["bbox"][1])]]}})
+    
     create_shp_file(f"{path_shp}/{file_shp}", colonne, data, 2154)
 
 
