@@ -8,7 +8,6 @@ from typing import List, Dict
 import os
 from tqdm import tqdm
 from dotenv import load_dotenv
-from dalle_lidar_classe import get_blocs_classe
 
 # Charger les variables d'environnement à partir du fichier .env
 
