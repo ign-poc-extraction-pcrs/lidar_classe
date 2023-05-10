@@ -8,12 +8,13 @@ from bs4 import BeautifulSoup
 # bloc disponible sur https://lidar-publications.cegedim.cloud/, à modifier pour le rendre dynamique
 BLOCS = []
 
-html_content = requests.get("https://lidar-publications.cegedim.cloud/").text
-soup = BeautifulSoup(html_content, "lxml")
+# html_content = requests.get("https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/").text
+# soup = BeautifulSoup(html_content, "lxml")
 
-for link in soup.find_all("a"):
-    if link != "test_176_dalles/":
-        BLOCS.append(link.text.split("/")[0])
+# for link in soup.find_all("a"):
+#     if link.text != "test/":
+#         BLOCS.append(link.text.split("/")[0])
+
 
 
 
@@ -61,6 +62,15 @@ def get_blocs_classe():
     Returns:
         List: Listes des blocs disponible
     """
+    BLOCS = []
+
+    html_content = requests.get("https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar/").text
+    soup = BeautifulSoup(html_content, "lxml")
+
+    for link in soup.find_all("a"):
+        if link.text != "test/":
+            BLOCS.append(link.text.split("/")[0])
+            
     # on recupere le chemin du geojson
     script_dir = os.path.dirname(__file__)
     file_path_config = os.path.join(script_dir, "../static/json/lidar_classe2.geojson")
@@ -164,5 +174,5 @@ def bbox_in_geojson(bbox, geojson):
     if intersection_area >= 0.01:
         return True
 
-if __name__ == "__main__":
-    get_dalle_in_bloc()
+# if __name__ == "__main__":
+#     get_dalle_in_bloc()

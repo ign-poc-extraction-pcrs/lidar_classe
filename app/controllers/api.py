@@ -30,7 +30,7 @@ def get_dalle_lidar_classe(x_min=None, y_min=None, x_max=None, y_max=None):
 def get_blocs_lidar_classe():
     blocs = get_blocs_classe()
 
-    return jsonify({"result": blocs, "count_bloc":len(BLOCS)})
+    return jsonify({"result": blocs, "count_bloc":len(blocs)})
 
 
 def get_dalle_in_bloc(bbox_windows):
@@ -43,28 +43,14 @@ def get_dalle_in_bloc(bbox_windows):
         dict: Dalles dans les blocs + nombre de dalle en tout
     """
     script_dir = os.path.dirname(__file__)
-    file_path_json = os.path.join(script_dir, "../static/json/dalle_lidar_classe.geojson")
     file_path_json_s3 = os.path.join(script_dir, "../static/json/dalle_lidar_classe_s3_2.geojson")
     paquet_within_bloc = {}
-
-    with open(file_path_json) as file:
-        dalles = json.load(file)
     
     with open(file_path_json_s3) as file:
         dalles_s3 = json.load(file)
     
-    dalles_paquets = dalles["paquet_within_bloc"]
     dalles_s3 = dalles_s3["paquet_within_bloc"]
     count = 0
-    for bloc in dalles_paquets:
-        if bloc not in dalles_s3:
-            if bloc not in paquet_within_bloc:
-                paquet_within_bloc[bloc] = []
-
-            for dalle in dalles_paquets[bloc]:
-                count += 1
-                if get_bboxes_within_bboxes(tuple(dalle["bbox"]), bbox_windows):
-                    paquet_within_bloc[bloc].append(dalle)
     
     for bloc in dalles_s3:
         if bloc not in paquet_within_bloc:
@@ -74,7 +60,6 @@ def get_dalle_in_bloc(bbox_windows):
             count += 1
             if get_bboxes_within_bboxes(tuple(dalle["bbox"]), bbox_windows):
                 paquet_within_bloc[bloc].append(dalle)
-    print(count)
     return {"paquet_within_bloc": paquet_within_bloc, "count_dalle": count}
 
 
