@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
         crs: crs_2154,
         continuousWorld: true,
         center: [44.503264422561784, 1.586937060953668],
-        zoom: 8,
+        zoom: 6,
     });
 
     // Création et ajout des fonds de carte en 2154
@@ -208,6 +208,13 @@ function create_dallage(resources) {
             var dalle_name = dalle[dalle.length -1]
             var year = dalle_name.split("_")[1]
 
+            name_x_min= x_min.toString()
+            if (name_x_min.length == 6) {
+                name_x_min = `0${parseInt(name_x_min)/1000}`
+            }else{
+                name_x_min = `${parseInt(name_x_min)/1000}`
+            }
+
             dallage["features"].push({
                 "type": "Feature",
                 "geometry": {
@@ -226,7 +233,7 @@ function create_dallage(resources) {
                 "properties": {
                     "url" : resource,
                     "bloc": bloc,
-                    "dalle_name": `LHD_C_LA93-IGN69_${x_min / 1000}-${y_max / 1000}_${year}_v1.laz`
+                    "dalle_name": `LHD_C_LA93-IGN69_${name_x_min}-${y_max / 1000}_${year}_v1.laz`
                 }
             });
         } else {
@@ -365,6 +372,14 @@ function create_dallage_blocs(zoom, geojson_blocs) {
                 var geojson_blocs = L.geoJson(dallage, {
                     style: DESIGN.base,
                 }).addTo(map);
+
+                geojson_blocs.eachLayer(function(layer) {
+                    // Ajout du gestionnaire d'événements click à chaque couche
+                    layer.on("click", function (e) {
+                        // Zoom sur la couche GeoJSON cliquée
+                        map.setView(e.target.getBounds().getCenter(), 10);
+                    });
+                });
 
                 document.getElementById("nb_bloc").textContent = data["count_bloc"];
             })
