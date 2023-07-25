@@ -117,7 +117,7 @@ function listData(zoom, northEast, southWest) {
     document.getElementById("key_error_div").style.display = "none";
     serveur = get_serveur(); 
     // getFeature info
-    fetch(`${serveur}/api/version5/get/dalle/${northEast[0]}/${southWest[1]}/${southWest[0]}/${northEast[1]}`)
+    fetch(`/api/version5/get/dalle/${northEast[0]}/${southWest[1]}/${southWest[0]}/${northEast[1]}`)
         .then(function (response) {
             if (response.ok) {
                 return response.json();
@@ -335,7 +335,7 @@ function create_dallage_blocs(zoom, geojson_blocs) {
         
         serveur = get_serveur(); 
         // getFeature info
-        fetch(`${serveur}/api/version5/get/blocs`)
+        fetch(`/api/version5/get/blocs`)
             .then(function (response) {
                 if (response.ok) {
                     return response.json();
