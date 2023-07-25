@@ -335,7 +335,7 @@ function create_dallage_blocs(zoom, geojson_blocs) {
         
         serveur = get_serveur(); 
         // getFeature info
-        fetch(`/api/version5/get/blocs`)
+        fetch('/api/version5/get/blocs`)
             .then(function (response) {
                 if (response.ok) {
                     return response.json();
