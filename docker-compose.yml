@@ -21,6 +21,7 @@ services:
       - POSTGRES_USER=${PGUSER}
       - POSTGRES_PASSWORD=${PGPASSWORD}
       - POSTGRES_DB=${PGDATABASE}
+      - PGPORT=${PGPORT}
       - HOST=${PGHOST}
     ports:
       - '5000:5000'
