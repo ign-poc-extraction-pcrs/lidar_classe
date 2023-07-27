@@ -19,9 +19,10 @@ class Migration:
         database = os.environ.get('POSTGRES_DB')
         user = os.environ.get('POSTGRES_USER')
         password = os.environ.get('POSTGRES_PASSWORD')
+        port = os.environ.get('PGPORT')
         # connexion à la base de données
         try:
-            self.connection = psycopg2.connect(user=user, password=password, host=host, database=database, port="5432")
+            self.connection = psycopg2.connect(user=user, password=password, host=host, database=database, port=port)
             
             self.cursor = self.connection.cursor(cursor_factory=RealDictCursor)
         except (Exception, Error) as error:
