@@ -25,7 +25,7 @@ class BucketAdpater:
 
         self.s3_client = session.client(
             service_name="s3",
-            aws_access_key_id=os.envrion.get('AWS_ACCESS_KEY_ID'),
+            aws_access_key_id=os.environ.get('AWS_ACCESS_KEY_ID'),
             aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
             endpoint_url=os.environ.get('ENDPOINT_URL'),
             region_name=os.environ.get('REGION_NAME'),
