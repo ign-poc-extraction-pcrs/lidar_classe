@@ -30,7 +30,7 @@ class BucketAdpater:
             endpoint_url=os.getenv('ENDPOINT_URL'),
             region_name=os.getenv('REGION_NAME'),
         )
-        self.bucket_name = os.getenv('BUCKET_NAME')
+        self.bucket_name = str(os.getenv('BUCKET_NAME'))
         self.link_download = "https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar"
         
     def read_file(self, name_file) -> None:
