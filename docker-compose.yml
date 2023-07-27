@@ -12,16 +12,16 @@ services:
     environment:
       - HTTP_PROXY=${HTTP_PROXY}
       - HTTPS_PROXY=${HTTPS_PROXY}
-      - AWS_ACCESS_KEY_ID=${ACCESS_KEY}
-      - AWS_SECRET_ACCESS_KEY=${SECRET_KEY}
+      - AWS_ACCESS_KEY_ID=${access_key_id}
+      - AWS_SECRET_ACCESS_KEY=${secret_access_key}
       - BUCKET_NAME=${BUCKET}
       - ENDPOINT_URL=${ENDPOINT}
       - REGION_NAME=${REGION}
       - HOST_SERVEUR=${HOST_SERVEUR}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${DATABASE}
-      - HOST=${HOST}
+      - POSTGRES_USER=${PGUSER}
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - POSTGRES_DB=${PGDATABASE}
+      - HOST=${PGHOST}
     ports:
       - '5000:5000'
     restart: on-failure
