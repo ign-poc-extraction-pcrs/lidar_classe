@@ -27,7 +27,7 @@ class BucketAdpater:
             service_name="s3",
             aws_access_key_id=os.environ.get('access_key_id'),
             aws_secret_access_key=os.environ.get('secret_access_key'),
-            endpoint_url=os.environ.get('ENDPOINTL'),
+            endpoint_url=os.environ.get('ENDPOINT'),
             region_name=os.environ.get('REGION'),
         )
         
