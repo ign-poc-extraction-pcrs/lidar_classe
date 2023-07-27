@@ -80,6 +80,7 @@ if __name__ == "__main__":
     migration = Migration()
     migration.connection()
     migration.create_table("""
+            CREATE EXTENSION IF NOT EXISTS postgis;
             CREATE TABLE IF NOT EXISTS dalle (
             id serial PRIMARY KEY,
             name VARCHAR(200) NOT NULL,
