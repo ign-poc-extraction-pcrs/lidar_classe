@@ -25,12 +25,12 @@ class BucketAdpater:
 
         self.s3_client = session.client(
             service_name="s3",
-            aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
-            aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
-            endpoint_url=os.getenv('ENDPOINT_URL'),
-            region_name=os.getenv('REGION_NAME'),
+            aws_access_key_id=os.envrion.get('AWS_ACCESS_KEY_ID'),
+            aws_secret_access_key=os.environ.get('AWS_SECRET_ACCESS_KEY'),
+            endpoint_url=os.environ.get('ENDPOINT_URL'),
+            region_name=os.environ.get('REGION_NAME'),
         )
-        self.bucket_name = str(os.getenv('BUCKET_NAME'))
+        self.bucket_name = os.environ.get('BUCKET_NAME')
         self.link_download = "https://storage.sbg.cloud.ovh.net/v1/AUTH_63234f509d6048bca3c9fd7928720ca1/ppk-lidar"
         
     def read_file(self, name_file) -> None:
