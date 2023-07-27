@@ -103,9 +103,9 @@ class BucketAdpater:
         """
         size = 1000
         # on recupere le x_min, y_min, x_max, y_max pour former une bbox
-        split_dalle = dalle.split("_")[3].split("-")
-        x_min = int(split_dalle[0]) * 1000
-        y_max = int(split_dalle[1]) * 1000
+        split_dalle = dalle.split("_")
+        x_min = int(split_dalle[2]) * 1000
+        y_max = int(split_dalle[3]) * 1000
         x_max = x_min + size
         y_min = y_max - size
 
