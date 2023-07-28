@@ -1,11 +1,10 @@
-from pathlib import Path
+import os
 import logging
+import json
 import boto3
 from botocore.exceptions import ClientError
 import logging
-import json
 from typing import List, Dict
-import os
 from tqdm import tqdm
 from dotenv import load_dotenv
 
@@ -73,9 +72,10 @@ class BucketAdpater:
                 name_bloc = obj['Prefix'].split("/")[0]
                 # on recupere les dalles du bloc sur le s3
                 file_content = self.read_file(f"{name_bloc}/{name_file}")
+                print(f"{name_bloc}...")
                 if file_content:
                     for bloc in tqdm(file_content["features"]):
-                        # on recupere la dalle reformater
+                        # on recupere la dalle reformatée
                         dalle = self.reformat_dalle(bloc["properties"]["file"], name_bloc)
                         if dalle :
                             dalles.append(dalle)
