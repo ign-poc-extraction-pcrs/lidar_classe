@@ -1,11 +1,13 @@
 import os
 import json
-from dalle_lidar_classe import BLOCS
 from dotenv import load_dotenv
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import Error
+from tqdm import tqdm
+
 from s3 import BucketAdpater
+from dalle_lidar_classe import BLOCS
 
 
 class Migration:
@@ -57,7 +59,7 @@ class Migration:
         """Recupere les dalles du json
 
         Returns:
-            dict: recupere les dalles 
+            dict: recupere les dalles
         """
         bucketAdpater =BucketAdpater()
         bucketAdpater.get_all_index_json_files("index.json", "/")
@@ -68,10 +70,11 @@ class Migration:
             dalles_s3 = json.load(file)
 
         dalles = []
-        for bl in BLOCS:
-            for dalle in dalles_s3["paquet_within_bloc"][bl]:
-                wkt = "POLYGON(({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1}))".format(dalle["bbox"][0], dalle["bbox"][1], dalle["bbox"][2], dalle["bbox"][3])
-                dalles.append({"name": dalle["name"], "geom": wkt})
+        for bl in tqdm(BLOCS):
+            if bl in dalles_s3["paquet_within_bloc"] and dalles_s3["paquet_within_bloc"][bl]:
+                for dalle in dalles_s3["paquet_within_bloc"][bl]:
+                    wkt = "POLYGON(({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1}))".format(dalle["bbox"][0], dalle["bbox"][1], dalle["bbox"][2], dalle["bbox"][3])
+                    dalles.append({"name": dalle["name"], "geom": wkt})
 
         return dalles
 
