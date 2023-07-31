@@ -1,5 +1,5 @@
 // Paramètres
-const REGEX_X_Y = new RegExp('([0-9]{4})_([0-9]{4}_LA93)');
+const REGEX_X_Y = new RegExp('([0-9]{4})_([0-9]{4}_PTS)');
 const REGEX_X_Y_s3 = new RegExp('(IGN69_[0-9]{4})-([0-9]{4})')
 ;
 // const REGEX_DEP = new RegExp('D[0-9AB]{3}'); // TODO : R93, R94, R01-06, FRA, FRX, FXX, GLP, MTQ, SBA, SMA, MYT, REU, SPM, GUF
