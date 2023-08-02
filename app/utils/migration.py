@@ -17,10 +17,10 @@ class Migration:
     def connection(self):
         load_dotenv()
         # informations de connexion à la base de données
-        host = os.environ.get('HOST')
-        database = os.environ.get('POSTGRES_DB')
-        user = os.environ.get('POSTGRES_USER')
-        password = os.environ.get('POSTGRES_PASSWORD')
+        host = os.environ.get('PGHOST')
+        database = os.environ.get('PGDATABASE')
+        user = os.environ.get('PGUSER')
+        password = os.environ.get('PGPASSWORD')
         port = os.environ.get('PGPORT')
         # connexion à la base de données
         try:
@@ -70,6 +70,7 @@ class Migration:
             dalles_s3 = json.load(file)
 
         dalles = []
+        print("insertion..")
         for bl in tqdm(BLOCS):
             if bl in dalles_s3["paquet_within_bloc"] and dalles_s3["paquet_within_bloc"][bl]:
                 for dalle in dalles_s3["paquet_within_bloc"][bl]:

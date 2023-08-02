@@ -18,28 +18,30 @@ services:
       - ENDPOINT_URL=${ENDPOINT}
       - REGION_NAME=${REGION}
       - HOST_SERVEUR=${HOST_SERVEUR}
-      - POSTGRES_USER=${PGUSER}
-      - POSTGRES_PASSWORD=${PGPASSWORD}
-      - POSTGRES_DB=${PGDATABASE}
+      - PGUSER=${PGUSER}
+      - PGPASSWORD=${PGPASSWORD}
+      - PGDATABASE=${PGDATABASE}
       - PGPORT=${PGPORT}
-      - HOST=${PGHOST}
+      - PGHOST=${PGHOST}
     ports:
       - '5000:5000'
     restart: on-failure
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./app:/app
   
   db:
     image: kartoza/postgis:15-3.3
-    # volumes:
-    #   - postgis-data:/var/lib/postgresql
-    #   - dbbackups:/backups
+    volumes:
+      - postgis-data:/var/lib/postgresql
+      - dbbackups:/backups
     environment:
       # If you need to create multiple database you can add coma separated databases eg gis,data
-      - POSTGRES_DB=${DATABASE}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASS=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=docker
+      - POSTGRES_PASS=docker
       - ALLOW_IP_RANGE=0.0.0.0/0
       # Add extensions you need to be enabled by default in the DB. Default are the five specified below
       - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
@@ -48,7 +50,7 @@ services:
       - "5432"
     restart: on-failure
     healthcheck:
-      test: "PGPASSWORD=$POSTGRES_PASSWORD pg_isready -h 127.0.0.1 -U $POSTGRES_USER -d $DATABASE"
+      test: "PGPASSWORD=docker pg_isready -h 127.0.0.1 -U docker -d gis"
       interval: 10s
       timeout: 10s
       retries: 4
@@ -61,3 +63,7 @@ services:
         condition: service_healthy
     ports:
       - 8080:8080
+  
+volumes:
+  postgis-data:
+  dbbackups:
