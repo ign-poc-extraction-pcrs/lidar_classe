@@ -50,3 +50,67 @@ ul#files>li>span.size {margin-left: 1em;}
         background-color: red;
     }
 }
+
+.container-url {
+    position: relative;
+    display: inline-block;
+  }
+  
+  #animationSuccess {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    transform: translateX(10px);
+    padding: 4px 10px 0 25%;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    border-radius: 5px;
+    animation: fadeOut 2s ease-in;
+    width: 100px;
+    height: 30px;
+  }
+  
+.hidden {
+    display: none;
+}
+
+#copy-url {
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #0a017e;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+  }
+  
+#copy-url:hover {
+    background-color: #18009e;
+  }
+  
+#copy-url:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px #18009e;
+  }
+
+.download_dalle{
+    font-weight: bold;
+    text-align: center;
+    padding: 5px;
+    text-decoration: none;
+    color: #ffffff;
+    background-color: #ffd000;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
+a{
+    text-decoration: none;
+    color: rgb(0, 0, 0);
+}

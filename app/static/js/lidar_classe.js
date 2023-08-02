@@ -1,7 +1,5 @@
 // Paramètres
 const REGEX_X_Y = new RegExp('([0-9]{4})_([0-9]{4}_PTS)');
-const REGEX_X_Y_s3 = new RegExp('(IGN69_[0-9]{4})-([0-9]{4})')
-;
 // const REGEX_DEP = new RegExp('D[0-9AB]{3}'); // TODO : R93, R94, R01-06, FRA, FRX, FXX, GLP, MTQ, SBA, SMA, MYT, REU, SPM, GUF
 const SIZE = 1000;
 const DESIGN = {
@@ -83,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function () {
     geojson_blocs = []
     create_dallage_blocs(map.getZoom())
     map.on('moveend', function() {
+        // create_dallage_blocs(map.getZoom())
         var northEast = map.getBounds()._northEast
         var southWest = map.getBounds()._southWest
 
@@ -110,7 +109,9 @@ function get_serveur() {
 function listData(zoom, northEast, southWest) {
     old_geojson = geojson
     map.removeLayer(old_geojson)
+   
     if (zoom >= 10) {
+    map.removeLayer(geojson_blocs)
     // On affiche la div de chargement
     document.getElementById("loading_div").style.display = "block";
     // On masque les div d'erreur et de formulaire
@@ -190,30 +191,17 @@ function create_dallage(resources) {
     for (let resource of resources) {
 
         name_dalle = resource["name"]
-
+        console.log(resource);
         var match_x_y = REGEX_X_Y.exec(name_dalle);
-        if(match_x_y == null){
-            match_x_y = REGEX_X_Y_s3.exec(name_dalle)
-            match_x_y[1] = match_x_y[1].split("_")[1]
-            match_x_y[2] = match_x_y[2] + "_LA93"
-        }
 
         if (match_x_y) {
-            var x_min = parseInt(match_x_y[1]) * 1000;
+            var x_min = parseInt(match_x_y[0]) * 1000;
             var y_max = parseInt(match_x_y[2].split("_")[0]) * 1000;
             var x_max = x_min + SIZE;
             var y_min = y_max - SIZE;
             var dalle = name_dalle.split("/")
-            var bloc = dalle[dalle.length -2]
-            var dalle_name = dalle[dalle.length -1]
-            var year = dalle_name.split("_")[1]
-
-            name_x_min= x_min.toString()
-            if (name_x_min.length == 6) {
-                name_x_min = `0${parseInt(name_x_min)/1000}`
-            }else{
-                name_x_min = `${parseInt(name_x_min)/1000}`
-            }
+            var dalle_name = dalle[dalle.length - 1]
+            var bloc = dalle[dalle.length - 2]
 
             dallage["features"].push({
                 "type": "Feature",
@@ -233,7 +221,7 @@ function create_dallage(resources) {
                 "properties": {
                     "url" : resource,
                     "bloc": bloc,
-                    "dalle_name": `LHD_C_LA93-IGN69_${name_x_min}-${y_max / 1000}_${year}_v1.laz`
+                    "dalle_name": dalle_name
                 }
             });
         } else {
@@ -307,18 +295,29 @@ function clickFeature(e) {
 function show_files(dalle) {
     // Récupération de la liste de fichiers
     var ulFiles = document.getElementById('files');
+    x = dalle.dalle_name.split('_')[2]
+    y = dalle.dalle_name.split('_')[3]
 
     // Suppression des enfants
     for (let child of ulFiles.childNodes) {
         ulFiles.removeChild(child);
     }
 
-    var li = document.createElement('li');
+    var button = document.createElement('button');
+    button.className = "download_dalle";
     var a = document.createElement('a');
-    a.textContent = `${dalle.dalle_name}`;
+    a.textContent = `Télécharger la dalle ${x}_${y}`;
     a.setAttribute('href', dalle.url.name);
-    li.appendChild(a);
-    ulFiles.appendChild(li);
+
+    button.appendChild(a)
+    ulFiles.appendChild(button);
+
+     // Écouter le clic sur le bouton
+    const bouton = document.getElementById("copy-url");
+    bouton.addEventListener("click", function() {
+    const texteARecuperer = dalle.url.name;
+    copierTexte(texteARecuperer);
+    });
 }
 
 function bytesToSize(bytes) {
@@ -329,10 +328,10 @@ function bytesToSize(bytes) {
     return `${size} ${sizes[i]}`;
 };
 
-function create_dallage_blocs(zoom, geojson_blocs) {
+function create_dallage_blocs(zoom) {
+    var old_geojson_blocs = geojson_blocs
+    map.removeLayer(old_geojson_blocs)
     if (zoom < 10){
-        var old_geojson_blocs = geojson_blocs
-        
         serveur = get_serveur(); 
         // getFeature info
         fetch(`${serveur}/api/version5/get/blocs`)
@@ -367,22 +366,51 @@ function create_dallage_blocs(zoom, geojson_blocs) {
                         }
                     });
                 });
-                // map.removeLayer(old_geojson_blocs)
-                // Add layer
-                var geojson_blocs = L.geoJson(dallage, {
-                    style: DESIGN.base,
-                }).addTo(map);
-
-                geojson_blocs.eachLayer(function(layer) {
-                    // Ajout du gestionnaire d'événements click à chaque couche
-                    layer.on("click", function (e) {
-                        // Zoom sur la couche GeoJSON cliquée
-                        map.setView(e.target.getBounds().getCenter(), 10);
-                    });
-                });
-
+                
+                geojson_blocs = add_dallage_bloc(dallage)
                 document.getElementById("nb_bloc").textContent = data["count_bloc"];
             })
             ;
     }
 }
+
+function add_dallage_bloc(dallage) {
+    // Add layer
+    var geojson_blocs = L.geoJson(dallage, {
+        style: DESIGN.base,
+    }).addTo(map);
+
+    geojson_blocs.eachLayer(function(layer) {
+        // Ajout du gestionnaire d'événements click à chaque couche
+        layer.on("click", function (e) {
+            // Zoom sur la couche GeoJSON cliquée
+            map.setView(e.target.getBounds().getCenter(), 10);
+        });
+    });
+    return geojson_blocs
+}
+
+// Fonction pour copier le texte dans le presse-papiers
+function copierTexte(texte) {
+    // Créer un élément de texte temporaire
+    const tempInput = document.createElement("textarea");
+    tempInput.value = texte;
+  
+    // Ajouter l'élément temporaire à la page
+    document.body.appendChild(tempInput);
+  
+    // Sélectionner et copier le texte
+    tempInput.select();
+    document.execCommand("copy");
+  
+    // Supprimer l'élément temporaire
+    document.body.removeChild(tempInput);
+
+    const animationSuccess = document.getElementById("animationSuccess");
+    animationSuccess.classList.remove("hidden");
+    setTimeout(function() {
+    animationSuccess.classList.add("hidden");
+    }, 1000);
+  }
+  
+ 

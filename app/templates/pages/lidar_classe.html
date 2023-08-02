@@ -10,47 +10,56 @@
 
 {% block body %}
 <div class="full-screen row" style="width: 100%;">
-  <div class="full-screen col-9">
-      <div id="map"></div>
-  </div>
-  <div id="side" class="col-3">
-      <h4 class="mt-4">Données classées Lidar&nbsp;HD</h4>
-      <br>
-      <h5><span id="nb_bloc"></span> blocs trouvés</h5>
-      <div id="text_div" style="display: none;" class="mt-4">
-          <h5><span id="nb_dalles_find"></span> dalles trouvées</h5>
-          <h5><span id="nb_dalles"></span> dalles affichées</h5>
-          <p>Cliquez sur une dalle pour afficher les données à télécharger...</p>
-      </div>
-      <div id="dalle_div" style="display: none;" class="mt-4">
-          <h5>Dalle <span id="name"></span></h5>
-          <p>Fichiers disponibles :</p>
-          <ul id="files"></ul>
-      </div>
-      <div id="loading_div" style="display: none;" class="mt-4">
-          <h5>Chargement...</h5>
-          <div class="progress">
-              <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
-                  aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
-          </div>
-      </div>
-      <div id="key_error_div" style="display: none;" class="mt-4">
-          <h5>Clé invalide !</h5>
-          <p>La clé <span id="key_span"></span> n'est pas valide ou n'a pas les droits requis.</p>
-      </div>
-      <div class="mt-4 download_shp">
-        <form action="/download/lidar/shp/classe" method="post">
-            <div class="box_download">
-                <button class="button_download"><img height="50px" width="50px"
-                        src="{{ url_for('static',filename='icon/download.svg') }}" alt=""></button>
-                <span>Télécharger le tableau d’assemblage en shapefile</span>
-            </div>
-        </form>
+    <div class="full-screen col-9">
+        <div id="map"></div>
     </div>
-      <!-- <form action="/download/lidar/geojson" method="post">
+    <div id="side" class="col-3">
+        <h4 class="mt-4">Données classées Lidar&nbsp;HD</h4>
+        <br>
+        <h5><span id="nb_bloc"></span> blocs trouvés</h5>
+        <div id="text_div" style="display: none;" class="mt-4">
+            <h5><span id="nb_dalles_find"></span> dalles trouvées</h5>
+            <h5><span id="nb_dalles"></span> dalles affichées</h5>
+            <p>Cliquez sur une dalle pour afficher les données à télécharger...</p>
+        </div>
+        <div id="dalle_div" style="display: none;" class="mt-4">
+            <p>Fichiers disponibles :</p>
+            <ul>
+                <li>Nuages de points : </li>
+                <ul>
+                    <div class="container-url">
+                        <button type="submit" id="copy-url">Copier URL</button>
+                        <div id="animationSuccess" class="hidden">Copié !</div>
+                    </div>
+                </ul>
+                <ul id="files"></ul>
+            </ul>
+            
+        </div>
+        <div id="loading_div" style="display: none;" class="mt-4">
+            <h5>Chargement...</h5>
+            <div class="progress">
+                <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"
+                    aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width: 100%"></div>
+            </div>
+        </div>
+        <div id="key_error_div" style="display: none;" class="mt-4">
+            <h5>Clé invalide !</h5>
+            <p>La clé <span id="key_span"></span> n'est pas valide ou n'a pas les droits requis.</p>
+        </div>
+        <div class="mt-4 download_shp">
+            <form action="/download/lidar/shp/classe" method="post">
+                <div class="box_download">
+                    <button class="button_download"><img height="50px" width="50px"
+                            src="{{ url_for('static',filename='icon/download.svg') }}" alt=""></button>
+                    <span>Télécharger le tableau d’assemblage en shapefile</span>
+                </div>
+            </form>
+        </div>
+        <!-- <form action="/download/lidar/geojson" method="post">
               <button class="geojson"><i class="fa fa-envelope"></i><span class="space"></span></button>
           </form> -->
-  </div>
+    </div>
 </div>
 {% endblock body %}
 
