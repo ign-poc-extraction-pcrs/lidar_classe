@@ -191,7 +191,6 @@ function create_dallage(resources) {
     for (let resource of resources) {
 
         name_dalle = resource["name"]
-        console.log(resource);
         var match_x_y = REGEX_X_Y.exec(name_dalle);
 
         if (match_x_y) {
@@ -248,11 +247,16 @@ function add_dallage(dallage) {
     return geojson;
 }
 
-function show_popup(layer, type = "open") {
+function show_popup(layer, type = "open", geo="dalle") {
     "Fonction qui affiche une popup, au survol d'une dalle son nom."
     var target = layer.feature["properties"]
-    var dalle_name = target.dalle_name;
-    template = `<p>${dalle_name}</p>`
+    if (geo == "dalle") {
+        var name = target.dalle_name;
+    }else if (geo == "bloc") {
+        var name = target.bloc
+    }
+    
+    template = `<p>${name}</p>`
 
     if (type == "open") {
         layer.bindPopup(template).openPopup()
@@ -271,7 +275,7 @@ function resetHighlightFeature(e) {
     "Remet le design normal."
     var layer = e.target;
     layer.setStyle(DESIGN.base);
-    show_popup(layer, "close");
+    show_popup(layer, type="close");
 }
 function clickFeature(e) {
     // On affiche la div de chargement
@@ -378,6 +382,12 @@ function add_dallage_bloc(dallage) {
     // Add layer
     var geojson_blocs = L.geoJson(dallage, {
         style: DESIGN.base,
+        onEachFeature: function (feature, layer) {
+            layer.on({
+                mouseover: highlightBloc,
+                mouseout: resetHighlightBloc,
+            });
+        }
     }).addTo(map);
 
     geojson_blocs.eachLayer(function(layer) {
@@ -388,6 +398,18 @@ function add_dallage_bloc(dallage) {
         });
     });
     return geojson_blocs
+}
+
+function highlightBloc(e) {
+    "popup quant on survole un bloc."
+    var layer = e.target;
+    show_popup(layer, type="open", geo="bloc");
+}
+
+function resetHighlightBloc(e) {
+    "enleve la popup"
+    var layer = e.target;
+    show_popup(layer, type="close", geo="bloc");
 }
 
 // Fonction pour copier le texte dans le presse-papiers
