@@ -5,16 +5,15 @@ from io import BytesIO
 from zipfile import ZipFile
 import os
 from pathlib import Path
-import urllib.request
+import re
 
 from app.utils.create_shp import create_shp_file
-from app.utils.dalle_lidar_classe import BLOCS
+from app.controllers.api import get_connexion_bdd
 
 download_lidar = Blueprint('download_lidar', __name__, url_prefix='/download/lidar')
 
 KEY_JSON_LIDAR = "key_lidar"
 PATH_KEY = Path(__file__).parent / "../../config.json"
-BLOCS = BLOCS
 
 @download_lidar.route('/shp', methods=['GET', 'POST'])
 def download_shp():
@@ -160,27 +159,39 @@ def create_geojson_lidar():
 
 
 def create_shp_lidar_classe(path_shp, file_shp):
-    
-    paquets = []
-    
-    script_dir = os.path.dirname(__file__)
-    file_path_json_s3 = os.path.join(script_dir, "../static/json/dalle_lidar_classe_s3_2.geojson")
-    
-    with open(file_path_json_s3) as file:
-        dalles_s3 = json.load(file)
-
+    SIZE = 1000  
     data = []
-    # on parcours chaque ligne pour inserer chaque paquets dans le code concerné
-    for bl in BLOCS:
-        for dalle in dalles_s3["paquet_within_bloc"][bl]:
 
+    bdd = get_connexion_bdd()
+    # si il n'y a aucun probleme avec la connexion à la base
+    if bdd :
+        #  on recupere les dalles qui sont dans la bbox envoyer
+        bdd.execute(f"SELECT name FROM dalle")
+        paquets = bdd.fetchall()
+        print(paquets)
+    
+    for paquet_lidar in paquets:        # on recupere le x et y du nom du paquet
+        pattern = r"\d{4}_\d{4}"
+        name_paquet = paquet_lidar["name"]
+        resultat = re.search(pattern, name_paquet)
+        coordonnees = resultat.group().split("_")
+        x = coordonnees[0]
+        y = coordonnees[1]
+        
+
+        # on convertit les bonnes coordonnées
+        if isint(x) and isint(y):
+            x_min = int(x) * 1000
+            y_min = int(y) * 1000
+            x_max = x_min + SIZE
+            y_max = y_min - SIZE
             # ce qui va etre envoyer dans ls shp
             name_colonne = "nom_pkk"
             colonne = [{"nom_colonne": name_colonne, "type": "C"}, {"nom_colonne": "url_telechargement", "type": "C"}]
-            data.append({name_colonne: dalle["name"], 
-                        "url_telechargement": dalle["name"] , 
-                        "Geometry": {'type': 'Polygon', 'coordinates': [[(dalle["bbox"][0], dalle["bbox"][1]), (dalle["bbox"][2], dalle["bbox"][1]), (dalle["bbox"][2], dalle["bbox"][3]), (dalle["bbox"][0], dalle["bbox"][3]), (dalle["bbox"][0], dalle["bbox"][1])]]}})
-    
+            data.append({name_colonne: name_paquet.split("/")[-1], 
+                        "url_telechargement": name_paquet , 
+                        "Geometry": {'type': 'Polygon', 'coordinates': [[(x_min, y_max), (x_max, y_max), (x_max, y_min), (x_min, y_min), (x_min, y_max)]]}})
+
     create_shp_file(f"{path_shp}/{file_shp}", colonne, data, 2154)
 
 
@@ -192,4 +203,3 @@ def isint(x):
         return False
     else:
         return a == b
-
