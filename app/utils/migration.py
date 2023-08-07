@@ -5,6 +5,10 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 from psycopg2 import Error
 from tqdm import tqdm
+from shapely.geometry import box, MultiPolygon, Polygon
+from shapely.ops import unary_union
+from shapely import area, to_geojson
+from shapely.wkb import dumps
 
 from s3 import BucketAdpater
 from dalle_lidar_classe import BLOCS
@@ -35,13 +39,13 @@ class Migration:
         self.cursor.execute(requete)
         self.connection.commit()
     
-    def insert(self, table, column, column_not_duplicate, data):
+    def insert(self, table, column, column_not_duplicate, data, type_data):
         # try:
         for d in data:
             self.cursor.execute(f"SELECT {column_not_duplicate} FROM {table} WHERE {column_not_duplicate} = '{d[column_not_duplicate]}'")
             # si la données n'est pas déjà en base on ne l'insere pas
             if not len(self.cursor.fetchall()) > 0:
-                requete = f"INSERT INTO {table} {column} VALUES (%s, %s)"
+                requete = f"INSERT INTO {table} {column} VALUES {type_data}"
                 content = tuple(d.values())
                 self.cursor.execute(requete, content)
         self.connection.commit()
@@ -61,8 +65,6 @@ class Migration:
         Returns:
             dict: recupere les dalles
         """
-        bucketAdpater =BucketAdpater()
-        bucketAdpater.get_all_index_json_files("index.json", "/")
         script_dir = os.path.dirname(__file__)
         file_path_json_s3 = os.path.join(script_dir, "../static/json/dalle_lidar_classe_s3_2.geojson")
 
@@ -75,9 +77,30 @@ class Migration:
             if bl in dalles_s3["paquet_within_bloc"] and dalles_s3["paquet_within_bloc"][bl]:
                 for dalle in dalles_s3["paquet_within_bloc"][bl]:
                     wkt = "POLYGON(({0} {1}, {2} {1}, {2} {3}, {0} {3}, {0} {1}))".format(dalle["bbox"][0], dalle["bbox"][1], dalle["bbox"][2], dalle["bbox"][3])
-                    dalles.append({"name": dalle["name"], "geom": wkt})
+                    dalles.append({"name": dalle["name"], "geom": wkt, "bloc": bl})
 
         return dalles
+    
+    def export_bloc_extent(self):
+        bucketAdpater =BucketAdpater()
+        bucketAdpater.get_all_index_json_files("index.json", "/")
+        script_dir = os.path.dirname(__file__)
+        file_path_json = os.path.join(script_dir, "../static/json/dalle_lidar_classe_s3_2.geojson")
+        with open(file_path_json, 'r') as f:
+            index_json_files = json.load(f)
+
+        blocs = []
+        # pour chaque bloc
+        for bloc, dalles in index_json_files['paquet_within_bloc'].items():
+            polygon = unary_union([box(*dalle['bbox']) for dalle in dalles])
+            new_polygon = Polygon(polygon.exterior.coords).normalize()
+            multi_polygon = MultiPolygon([new_polygon])
+            geom_binary = dumps(multi_polygon)
+            
+
+            blocs.append({"name": bloc, "geom": geom_binary})
+        
+        return blocs
 
 
 if __name__ == "__main__":
@@ -85,10 +108,20 @@ if __name__ == "__main__":
     migration.connection()
     migration.create_table("""
             CREATE EXTENSION IF NOT EXISTS postgis;
-            CREATE TABLE IF NOT EXISTS dalle (
+            CREATE TABLE IF NOT EXISTS bloc (
             id serial PRIMARY KEY,
             name VARCHAR(200) NOT NULL,
             geom geometry NOT NULL);
         """)
-    migration.insert("dalle", "(name, geom)", "name", migration.get_dalle_json())
+    migration.create_table("""
+            CREATE EXTENSION IF NOT EXISTS postgis;
+            CREATE TABLE IF NOT EXISTS dalle (
+            id serial PRIMARY KEY,
+            name VARCHAR(200) NOT NULL,
+            geom geometry NOT NULL,
+            bloc_id INTEGER NOT NULL,
+            FOREIGN KEY (bloc_id) REFERENCES bloc(id));
+        """)
+    migration.insert("bloc", "(name, geom)", "name", migration.export_bloc_extent(), f"(%s, %s)")
+    migration.insert("dalle", "(name, geom, bloc)", "name", migration.get_dalle_json(), f"(%s, %s, %s)")
     migration.close_connection()
