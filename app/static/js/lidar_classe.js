@@ -18,6 +18,14 @@ const DESIGN = {
         "color": '',
         "dashArray": "4",
         "fillOpacity": 0.7
+    },
+    "bloc": {
+        "fillColor": "grey",
+        "weight": 2,
+        "opacity": 1,
+        "color": "#000",
+        "dashArray": "0",
+        "fillOpacity": 0.5
     }
 }
 // Source : https://epsg.io/2154.proj4
@@ -381,7 +389,7 @@ function create_dallage_blocs(zoom) {
 function add_dallage_bloc(dallage) {
     // Add layer
     var geojson_blocs = L.geoJson(dallage, {
-        style: DESIGN.base,
+        style: DESIGN.bloc,
         onEachFeature: function (feature, layer) {
             layer.on({
                 mouseover: highlightBloc,
