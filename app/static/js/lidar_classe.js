@@ -353,9 +353,9 @@ function create_dallage_blocs(zoom) {
                     "features": [],
                 }
 
-                data["result"].forEach(bloc => {
+                data["result"]["features"].forEach(bloc => {
                     coordinates = []
-                    bloc.geometry.coordinates[0][0].forEach(geom => {
+                    bloc.geometry.coordinates[0].forEach(geom => {
                         coordinates.push(converter.inverse([geom[0], geom[1]]))
                     });
 

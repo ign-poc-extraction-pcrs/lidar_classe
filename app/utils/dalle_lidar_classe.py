@@ -2,8 +2,13 @@ import os
 import json
 import urllib.request
 import shapely.geometry
+from shapely.wkb import loads
 import requests
 from bs4 import BeautifulSoup
+import psycopg2
+import psycopg2.extras
+from dotenv import load_dotenv
+import pyproj
 
 # bloc disponible sur https://lidar-publications.cegedim.cloud/, à modifier pour le rendre dynamique
 BLOCS = []
@@ -22,9 +27,21 @@ for link in soup.find_all("a"):
 #     if link.text != "test/":
 #         BLOCS.append(link.text.split("/")[0])
 
+def get_connexion_bdd():
+    """ Connexion à la base de données pour accéder aux dalles pcrs
 
+    Returns:
+        cursor: curseur pour executer des requetes à la base
+    """
+    try :
+        load_dotenv()
 
-
+        conn = psycopg2.connect(database=os.environ.get('PGDATABASE'), user=os.environ.get('PGUSER'), host=os.environ.get('PGHOST'), password=os.environ.get('PGPASSWORD'), port=os.environ.get('PGPORT'))
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+        print(cur)
+    except psycopg2.OperationalError as e:
+        return False
+    return cur
 
 def get_dalle_classe():
     """recupere les dalles classées
@@ -69,24 +86,24 @@ def get_blocs_classe():
     Returns:
         List: Listes des blocs disponible
     """     
-    # on recupere le chemin du geojson
-    script_dir = os.path.dirname(__file__)
-    file_path_config = os.path.join(script_dir, "../static/json/lidar_classe2.geojson")
-    # list dans lesquels seront stocker les blocs disponibles
-    blocs_available = []
+    bdd = get_connexion_bdd()
+    blocs_geojson = {"features": []}
+    if bdd :
+        bdd.execute("SELECT * FROM bloc")
+        blocs = bdd.fetchall()
+        for bloc in blocs:
+            geom = loads(bloc["geom"])
+            blocs_geojson['features'].append(
+                {"type": "Feature",
+                "properties": {
+                    "Nom_bloc": bloc["name"],
+                    "Superficie": 2500
+                },
+                "geometry": {
+                    "type": "MultiPolygon",
+                    "coordinates": [reformat_multypolygon(geom)]}})
+    return blocs_geojson
 
-    try :
-        with open(file_path_config) as json_file:
-            blocs = json.load(json_file)
-            # on parcours la liste des blocs 
-            for bloc in blocs["features"] :
-                # si le bloc est dans la liste on l'ajoute à notre liste 
-                if bloc["properties"]["Nom_bloc"] in BLOCS :
-                    blocs_available.append(bloc)
-    except:
-        print("erreur dans la récuperation du json config.json")
-
-    return blocs_available
 
 def get_dalle_in_bloc():
     """Recupere les dalles dans les blocs (on enleve ceux qui dépasse)
@@ -171,6 +188,31 @@ def bbox_in_geojson(bbox, geojson):
     # si il y'a un recouvrement d'au moins 1%
     if intersection_area >= 0.01:
         return True
+    
+def get_connexion_bdd():
+    """ Connexion à la base de données pour accéder aux dalles pcrs
+
+    Returns:
+        cursor: curseur pour executer des requetes à la base
+    """
+    try :
+        load_dotenv()
+
+        conn = psycopg2.connect(database=os.environ.get('PGDATABASE'), user=os.environ.get('PGUSER'), host=os.environ.get('PGHOST'), password=os.environ.get('PGPASSWORD'), port=os.environ.get('PGPORT'))
+        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+    except psycopg2.OperationalError as e:
+        return False
+    return cur
+
+def reformat_multypolygon(multipolygon):
+
+    lambert93_coordinates = []
+    for polygon in multipolygon.geoms:
+        for ring in polygon.exterior.coords:
+            x,y = ring
+            lambert93_coordinates.append([x, y])
+
+    return lambert93_coordinates
 
 # if __name__ == "__main__":
 #     get_dalle_in_bloc()

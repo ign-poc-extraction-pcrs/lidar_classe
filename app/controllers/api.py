@@ -2,9 +2,7 @@ from flask import Blueprint, jsonify
 import json
 import os
 import shapely.geometry
-from app.utils.dalle_lidar_classe import BLOCS, get_blocs_classe, get_dalle_classe
-import psycopg2
-import psycopg2.extras
+from app.utils.dalle_lidar_classe import BLOCS, get_blocs_classe, get_connexion_bdd
 from dotenv import load_dotenv
 
 
@@ -43,7 +41,7 @@ def get_dalle_lidar_classe_2(x_min=None, y_min=None, x_max=None, y_max=None):
 def get_blocs_lidar_classe():
     blocs = get_blocs_classe()
 
-    return jsonify({"result": blocs, "count_bloc":len(blocs)})
+    return jsonify({"result": blocs, "count_bloc":len(blocs['features'])})
 
 
 def get_dalle_in_bloc(bbox_windows):
@@ -97,17 +95,3 @@ def get_bboxes_within_bboxes(bbox, bbox_windows):
     return False
 
 
-def get_connexion_bdd():
-    """ Connexion à la base de données pour accéder aux dalles pcrs
-
-    Returns:
-        cursor: curseur pour executer des requetes à la base
-    """
-    try :
-        load_dotenv()
-
-        conn = psycopg2.connect(database=os.environ.get('PGDATABASE'), user=os.environ.get('PGUSER'), host=os.environ.get('PGHOST'), password=os.environ.get('PGPASSWORD'), port=os.environ.get('PGPORT'))
-        cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
-    except psycopg2.OperationalError as e:
-        return False
-    return cur
