@@ -17,6 +17,7 @@ from dalle_lidar_classe import BLOCS
 class Migration:
     def __init__(self) -> None:
         self.script_dir = os.path.dirname(__file__)
+        self.tables = ["dalle", "bloc"]
 
     def connection(self):
         load_dotenv()
@@ -101,6 +102,21 @@ class Migration:
             blocs.append({"name": bloc, "geom": geom_binary})
         
         return blocs
+
+    def drop_data(self):
+        """fonction qui supprime les tables de la base"""
+        for table in self.tables:
+            sql = f"DROP TABLE {table};"
+            try:
+                # Exécution de la requête SQL
+                self.cursor.execute(sql)
+                # Valider les changements dans la base de données
+                self.connection.commit()
+                print(f"La table {table} a été supprimée avec succès.")
+            except psycopg2.Error as e:
+                # En cas d'erreur, annuler les changements et afficher l'erreur
+                self.connection.rollback()
+                print("Erreur lors de la suppression de la table :", e)
 
 
 if __name__ == "__main__":
