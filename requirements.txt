@@ -32,3 +32,4 @@ tqdm==4.65.0
 urllib3==1.26.15
 Werkzeug==2.3.3
 xmltodict==0.13.0
+gunicorn==21.2.0 
