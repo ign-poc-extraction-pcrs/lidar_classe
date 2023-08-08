@@ -1,9 +1,10 @@
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, request
 import json
 import os
 import shapely.geometry
 from app.utils.dalle_lidar_classe import BLOCS, get_blocs_classe, get_connexion_bdd
 from dotenv import load_dotenv
+from urllib.parse import urlparse
 
 
 api = Blueprint('api', __name__, url_prefix='/api')
@@ -12,7 +13,8 @@ api = Blueprint('api', __name__, url_prefix='/api')
 def get_config_serveur():
     # recupere le serveur
     statut = "failure"
-    host = os.environ.get('HOST_SERVEUR')
+    url = urlparse(request.base_url)
+    host = f"{url.scheme}://{url.netloc}"
     if host :
         statut = "success"
 
