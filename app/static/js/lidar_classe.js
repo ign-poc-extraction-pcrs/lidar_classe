@@ -101,19 +101,6 @@ document.addEventListener("DOMContentLoaded", function () {
     
 });
 
-function get_serveur() {
-    // requete ajax pour recuperer les differentes clé lidar
-    const xhr = new XMLHttpRequest();
-    xhr.open("GET", "api/get/config/serveur", false);
-    xhr.getResponseHeader("Content-type", "application/json");
-    xhr.onload = function() {
-        const obj = JSON.parse(this.responseText);
-        serveur = obj.result
-    } 
-    xhr.send()
-    return serveur
-}
-
 function listData(zoom, northEast, southWest) {
     old_geojson = geojson
     map.removeLayer(old_geojson)
@@ -124,9 +111,8 @@ function listData(zoom, northEast, southWest) {
     document.getElementById("loading_div").style.display = "block";
     // On masque les div d'erreur et de formulaire
     document.getElementById("key_error_div").style.display = "none";
-    serveur = get_serveur(); 
     // getFeature info
-    fetch(`${serveur}/api/version5/get/dalle/${northEast[0]}/${southWest[1]}/${southWest[0]}/${northEast[1]}`)
+    fetch(`/api/version5/get/dalle/${northEast[0]}/${southWest[1]}/${southWest[0]}/${northEast[1]}`)
         .then(function (response) {
             if (response.ok) {
                 return response.json();
@@ -344,9 +330,8 @@ function create_dallage_blocs(zoom) {
     var old_geojson_blocs = geojson_blocs
     map.removeLayer(old_geojson_blocs)
     if (zoom < 10){
-        serveur = get_serveur(); 
         // getFeature info
-        fetch(`${serveur}/api/version5/get/blocs`)
+        fetch(`/api/version5/get/blocs`)
             .then(function (response) {
                 if (response.ok) {
                     return response.json();

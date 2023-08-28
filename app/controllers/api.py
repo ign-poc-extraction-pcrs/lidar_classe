@@ -9,18 +9,6 @@ from urllib.parse import urlparse
 
 api = Blueprint('api', __name__, url_prefix='/api')
 
-@api.route('/get/config/serveur')
-def get_config_serveur():
-    # recupere le serveur
-    statut = "failure"
-    url = urlparse(request.base_url)
-    host = f"{url.scheme}://{url.netloc}"
-    if host :
-        statut = "success"
-
-    return jsonify({"statut": statut, "result": host})
-
-
 @api.route('/version5/get/dalle/<float(signed=True):x_min>/<float(signed=True):y_min>/<float(signed=True):x_max>/<float(signed=True):y_max>', methods=['GET', 'POST'])
 def get_dalle_lidar_classe_2(x_min=None, y_min=None, x_max=None, y_max=None): 
     load_dotenv()
