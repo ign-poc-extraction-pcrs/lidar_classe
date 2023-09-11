@@ -253,7 +253,7 @@ function show_popup(layer, type = "open", geo="dalle") {
     template = `<p>${name}</p>`
 
     if (type == "open") {
-        layer.bindPopup(template).openPopup()
+        layer.bindPopup(template, {autoPan: false}).openPopup()
     } else {
         layer.closePopup()
     }
