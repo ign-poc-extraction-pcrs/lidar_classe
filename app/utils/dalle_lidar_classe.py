@@ -9,6 +9,7 @@ import psycopg2
 import psycopg2.extras
 from dotenv import load_dotenv
 import pyproj
+from shapely import area, to_geojson
 
 # bloc disponible sur https://lidar-publications.cegedim.cloud/, à modifier pour le rendre dynamique
 BLOCS = []
@@ -92,16 +93,14 @@ def get_blocs_classe():
         bdd.execute("SELECT * FROM bloc")
         blocs = bdd.fetchall()
         for bloc in blocs:
-            geom = loads(bloc["geom"])
             blocs_geojson['features'].append(
                 {"type": "Feature",
                 "properties": {
                     "Nom_bloc": bloc["name"],
-                    "Superficie": 2500
+                    # "Superficie": int(area(loads(bloc["geom"])) / 1000000)
                 },
-                "geometry": {
-                    "type": "MultiPolygon",
-                    "coordinates": [reformat_multypolygon(geom)]}})
+                "geometry": json.loads(to_geojson(loads(bloc["geom"])))
+                })
     return blocs_geojson
 
 
@@ -203,16 +202,6 @@ def get_connexion_bdd():
     except psycopg2.OperationalError as e:
         return False
     return cur
-
-def reformat_multypolygon(multipolygon):
-
-    lambert93_coordinates = []
-    for polygon in multipolygon.geoms:
-        for ring in polygon.exterior.coords:
-            x,y = ring
-            lambert93_coordinates.append([x, y])
-
-    return lambert93_coordinates
 
 # if __name__ == "__main__":
 #     get_dalle_in_bloc()
